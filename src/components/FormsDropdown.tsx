@@ -1,5 +1,13 @@
-import { useState, useEffect, useRef } from "react";
-import { FileText, Plus, Edit2, Trash2, ExternalLink, X } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import {
+  FileText,
+  Plus,
+  Edit2,
+  Trash2,
+  ExternalLink,
+  X,
+  Search,
+} from "lucide-react";
 import { useForm } from "../hooks/useForm";
 import type { Form } from "../types/form.types";
 import { useAuth } from "../contexts/AuthContext";
@@ -11,6 +19,7 @@ const FormsDropdown = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newForm, setNewForm] = useState({ title: "", content: "" });
   const [editForm, setEditForm] = useState({ title: "", content: "" });
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -28,6 +37,7 @@ const FormsDropdown = () => {
         setIsOpen(false);
         setIsAdding(false);
         setEditingId(null);
+        setSearchQuery("");
       }
     };
 
@@ -40,6 +50,17 @@ const FormsDropdown = () => {
       fetchForms();
     }
   }, [isOpen, fetchForms]);
+
+  const filteredForms = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return forms;
+
+    return forms.filter(
+      (form) =>
+        form.title.toLowerCase().includes(query) ||
+        form.content.toLowerCase().includes(query)
+    );
+  }, [forms, searchQuery]);
 
   const handleAddForm = async () => {
     if (!newForm.title.trim() || !newForm.content.trim()) {
@@ -104,7 +125,10 @@ const FormsDropdown = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setSearchQuery("");
+        }}
         className="p-2 rounded-lg text-[#313647] hover:bg-[#ABDBC0] transition-colors relative"
         aria-label="Forms"
       >
@@ -133,6 +157,34 @@ const FormsDropdown = () => {
               {isAdding ? <X size={18} /> : <Plus size={18} />}
             </button>
           </div>
+
+          {/* Search */}
+          {forms.length > 0 && (
+            <div className="p-2 border-b border-gray-200">
+              <div className="relative">
+                <Search
+                  size={14}
+                  className="absolute text-gray-400 -translate-y-1/2 pointer-events-none left-3 top-1/2"
+                />
+                <input
+                  type="text"
+                  placeholder="Search forms..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full py-1.5 pl-8 pr-8 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute p-0.5 text-gray-400 -translate-y-1/2 rounded right-2 top-1/2 hover:bg-gray-200 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Add New Form */}
           {isAdding && (
@@ -183,9 +235,13 @@ const FormsDropdown = () => {
               <div className="p-4 text-center text-gray-500">
                 No forms yet. Click + to add one!
               </div>
+            ) : filteredForms.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No forms match "{searchQuery}".
+              </div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {forms.map((form) => (
+                {filteredForms.map((form) => (
                   <div
                     key={form._id}
                     className="p-3 transition-colors hover:bg-gray-50"
