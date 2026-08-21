@@ -127,4 +127,19 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => `/forms/${id}`,
     GET: (id: string) => `/forms/${id}`,
   },
+  TEAM: {
+    GET_ALL: "/team",
+    GET: (id: string) => `/team/${id}`,
+    CREATE: "/team",
+    UPDATE: (id: string) => `/team/${id}`,
+    DELETE: (id: string) => `/team/${id}`,
+    UPLOAD_PHOTO: "/team/upload-photo",
+  },
+  OFFICES: {
+    GET_ALL: "/offices",
+    GET: (id: string) => `/offices/${id}`,
+    CREATE: "/offices",
+    UPDATE: (id: string) => `/offices/${id}`,
+    DELETE: (id: string) => `/offices/${id}`,
+  },
 } as const;
